@@ -12,7 +12,7 @@ public class Client extends Thread {
 
 	public Client(String user, String server, int port) {
 		client = new MessagingClient(server, port);
-//		this.user = user;
+		this.user = user;
 	}
 
 	private void send(Message msg) {

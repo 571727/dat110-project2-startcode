@@ -2,12 +2,11 @@ package no.hvl.dat110.messages;
 
 public class PublishMsg extends Message {
 	
-	// TODO: 
+
 	// Implement objectvariables, constructor, get/set-methods, and toString method
 	private String topic;
 	private String message;
-	// TODO: 
-	// Implement objectvariables, constructor, get/set-methods, and toString method
+
 	
 	public PublishMsg(String user, String topic, String message) {
 		super(MessageType.PUBLISH, user);

@@ -1,7 +1,10 @@
 package no.hvl.dat110.broker;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import no.hvl.dat110.common.Logger;
 import no.hvl.dat110.common.Stopable;
@@ -107,9 +110,9 @@ public class Dispatcher extends Stopable {
 
 		Logger.log("onCreateTopic:" + msg.toString());
 
-		// TODO: create the topic in the broker storage 
-		
-		throw new RuntimeException("not yet implemented");
+		// TODO: create the topic in the broker storage
+		String topic = msg.getTopic();
+		storage.createTopic(topic);
 
 	}
 
@@ -118,8 +121,8 @@ public class Dispatcher extends Stopable {
 		Logger.log("onDeleteTopic:" + msg.toString());
 
 		// TODO: delete the topic from the broker storage
-		
-		throw new RuntimeException("not yet implemented");
+		String topic = msg.getTopic();
+		storage.deleteTopic(topic);
 	}
 
 	public void onSubscribe(SubscribeMsg msg) {
@@ -127,8 +130,9 @@ public class Dispatcher extends Stopable {
 		Logger.log("onSubscribe:" + msg.toString());
 
 		// TODO: subscribe user to the topic
-		
-		throw new RuntimeException("not yet implemented");
+		String user = msg.getUser();
+		String topic = msg.getTopic();
+		storage.addSubscriber(user, topic);
 		
 	}
 
@@ -137,8 +141,9 @@ public class Dispatcher extends Stopable {
 		Logger.log("onUnsubscribe:" + msg.toString());
 
 		// TODO: unsubscribe user to the topic
-		
-		throw new RuntimeException("not yet implemented");
+		String user = msg.getUser();
+		String topic = msg.getTopic();
+		storage.removeSubscriber(user, topic);
 
 	}
 
@@ -147,8 +152,14 @@ public class Dispatcher extends Stopable {
 		Logger.log("onPublish:" + msg.toString());
 
 		// TODO: publish the message to clients subscribed to the topic
+		String topic = msg.getTopic();
 		
-		throw new RuntimeException("not yet implemented");
+		ConcurrentHashMap<String, Set<String>> subscriptions = storage.subscriptions;
+		Set<String> clients = subscriptions.get(topic);
+		for(String s : clients) {
+			ClientSession session = storage.getSession(s);
+			session.send(msg);
+		}
 		
 	}
 }

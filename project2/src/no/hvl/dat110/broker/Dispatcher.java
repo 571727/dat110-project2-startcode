@@ -3,8 +3,10 @@ package no.hvl.dat110.broker;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import no.hvl.dat110.common.Logger;
 import no.hvl.dat110.common.Stopable;
@@ -90,10 +92,18 @@ public class Dispatcher extends Stopable {
 		String user = msg.getUser();
 
 		Logger.log("onConnect:" + msg.toString());
-
 		storage.addClientSession(user, connection);
+		if(storage.disconnectedCMsg.containsKey(user)) {
+			Set<PublishMsg> messages = storage.disconnectedCMsg.get(user);
+			ClientSession session = storage.getSession(user);
+			for(PublishMsg s : messages) {
+				session.send(s);
+			}
+			storage.subscriptions.remove(user);
+		}
 
 	}
+
 
 	// called by dispatch upon receiving a disconnect message 
 	public void onDisconnect(DisconnectMsg msg) {
@@ -103,6 +113,7 @@ public class Dispatcher extends Stopable {
 		Logger.log("onDisconnect:" + msg.toString());
 
 		storage.removeClientSession(user);
+		storage.addClientToBuffer(user);
 
 	}
 
@@ -157,8 +168,13 @@ public class Dispatcher extends Stopable {
 		ConcurrentHashMap<String, Set<String>> subscriptions = storage.subscriptions;
 		Set<String> clients = subscriptions.get(topic);
 		for(String s : clients) {
-			ClientSession session = storage.getSession(s);
-			session.send(msg);
+			if(storage.isDisconnected(s)) {
+				storage.addDiscMsg(s, msg);
+			}else {
+				ClientSession session = storage.getSession(s);
+				session.send(msg);
+			}
+			
 		}
 		
 	}

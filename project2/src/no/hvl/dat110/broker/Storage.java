@@ -7,16 +7,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import no.hvl.dat110.common.Logger;
+import no.hvl.dat110.messages.PublishMsg;
 import no.hvl.dat110.messagetransport.Connection;
 
 public class Storage {
 
 	protected ConcurrentHashMap<String, Set<String>> subscriptions;
 	protected ConcurrentHashMap<String, ClientSession> clients;
+	protected ConcurrentHashMap<String, Set<PublishMsg>> disconnectedCMsg;
 
 	public Storage() {
 		subscriptions = new ConcurrentHashMap<String, Set<String>>();
 		clients = new ConcurrentHashMap<String, ClientSession>();
+		disconnectedCMsg = new ConcurrentHashMap<String, Set<PublishMsg>>();
 	}
 
 	public Collection<ClientSession> getSessions() {
@@ -78,5 +81,20 @@ public class Storage {
 		Set<String> users = subscriptions.get(topic);
 		users.remove(user);
 		subscriptions.put(topic, users);
+	}
+
+	public void addClientToBuffer(String user) {
+		
+		disconnectedCMsg.put(user, new HashSet<PublishMsg>());
+		
+	}
+
+	public boolean isDisconnected(String s) {
+		return !clients.containsKey(s);
+	}
+
+	public void addDiscMsg(String user, PublishMsg msg) {
+		disconnectedCMsg.get(user).add(msg);
+		
 	}
 }

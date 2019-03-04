@@ -12,13 +12,24 @@ public class DisplayDevice {
 		
 		System.out.println("Display starting ...");
 		
-		// TODO - START
-				
-		// TODO - END
+		/*
+		 * Connect to the same broker as the temperaturedevice. Make a temperature topic
+		 */
+		String topic = "temperature";
+		Client client = new Client("DisplayClient", "localhost", 8080);
 		
+		client.connect();
+		client.createTopic(topic);
+		client.subscribe(topic);
+		
+		for(int i = 0; i < COUNT; i++) {
+			Message msg = client.receive();
+			System.err.println("DISPLAYDEVICE: " + msg.toString());
+		}
+		
+		client.disconnect();
 		System.out.println("Display stopping ... ");
 		
-		throw new RuntimeException("not yet implemented");
 		
 	}
 }
